@@ -52,13 +52,29 @@ dat_gcm_mean =
 
 # GCM Mean Raster
 
+# Experiment: read as stacked raster, take mean, then combine in tidy format
+
+dat_test = 
+"data/2023_Dyeetal_Fire/Data/Data/OR Coast Range" %>% 
+  list.files %>% 
+  paste0("data/2023_Dyeetal_Fire/Data/Data/OR Coast Range/", .) %>% 
+  rast %>% 
+  subset("BP_Baseline", negate = TRUE) %>% 
+  rename(BP = 1) # almost, but look at terra docs to rename var across all layers in a stack?
+  filter() # sentinel values to NA
+  mean(na.rm = TRUE) # this works if sentinel values are fixed
+
+
 # This works, but it's fragile.
 
-dat_gcm_raster_list = 
+dat_gcm_raster = 
+  # Get names.
   tibble(coast = "data/2023_Dyeetal_Fire/Data/Data/OR Coast Range" %>% list.files %>% paste0("data/2023_Dyeetal_Fire/Data/Data/OR Coast Range/", .),
          cascades = "data/2023_Dyeetal_Fire/Data/Data/OR West Cascades" %>% list.files %>% paste0("data/2023_Dyeetal_Fire/Data/Data/OR West Cascades/", .),
          lowlands = "data/2023_Dyeetal_Fire/Data/Data/Olympic and Puget Lowlands" %>% list.files %>% paste0("data/2023_Dyeetal_Fire/Data/Data/Olympic and Puget Lowlands/", .)) %>% 
+  # Clean out baseline estimates.
   filter(str_sub(coast, -15, -1) != "BP_Baseline.tif") %>% 
+  # Get files into compatible spatial definitions.
   mutate(coast = 
            coast %>% 
            map(rast) %>% 
@@ -74,14 +90,24 @@ dat_gcm_raster_list =
                 .f = ~ resample(.x, .y)),
          lowlands = 
            lowlands %>% 
+           map(rast) %>% 
            map(~ rename(., var = 1)) %>% 
            map(~ filter(., var > 0)) %>% 
            map2(.x = .,
                 .y = coast,
                 .f = ~ resample(.x, .y))) %>% 
-  
-  # then merge into two additional columns
-  # then clean out earlier columns
+  # Get a single set of rasters.
+  mutate(merge_1 = 
+           map2(.x = coast,
+                .y = cascades,
+                .f = ~ merge(.x, .y)),
+         merge_2 = 
+           map2(.x = merge_1,
+                .y = lowlands,
+                .f = ~ merge(.x, .y))) %>% 
+  # Set up for aggregation.
+  select(out = merge_2)
+
   # then pull
   # then merge/mean
   # then project
