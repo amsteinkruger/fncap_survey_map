@@ -236,7 +236,7 @@ vis_bars_2 =
 
 # Get state forests.
 
-# Note that this code is pretty fragile.
+#  This code is pretty fragile.
 
 dat_bars_3_odf = 
   "data/ODF.gdb" %>% 
@@ -250,8 +250,8 @@ dat_bars_3_odf =
   summarize(ACRES = sum(ACRES, na.rm = TRUE)) %>% 
   ungroup
 
-dat_bars_3_baseline = dat_bars_2_odf %>% extract(dat_baseline, ., mean, na.rm = TRUE)
-dat_bars_3_gcm = dat_bars_2_odf %>% extract(dat_gcm, ., mean, na.rm = TRUE)
+dat_bars_3_baseline = dat_bars_3_odf %>% extract(dat_baseline, ., mean, na.rm = TRUE)
+dat_bars_3_gcm = dat_bars_3_odf %>% extract(dat_gcm, ., mean, na.rm = TRUE)
 
 dat_bars_3 = 
   left_join(dat_bars_3_baseline, dat_bars_3_gcm) %>% 
@@ -260,14 +260,40 @@ dat_bars_3 =
                             ID == 3 ~ "Tillamook")) %>% 
   rename(Baseline = BP_Baseline,
          'GCM Mean' = mean) %>% 
-  pivot_longer(cols = c(Baseline, 'GCM Mean'))
+  pivot_longer(cols = c(Baseline, 'GCM Mean')) %>% 
+  mutate(name_periods = ifelse(name == "Baseline", "1992-2020", "2035-2064") %>% factor %>% fct_rev,
+         Forest = Forest %>% factor %>% fct_relevel("Clatsop", "Tillamook", "Santiam") %>% fct_rev)
 
 vis_bars_3 = 
   dat_bars_3 %>% 
   ggplot() +
   geom_col(aes(x = Forest,
                y = value,
-               fill = name),
+               fill = name_periods),
            position = "dodge2") +
-  coord_flip()
+  geom_text(aes(x = Forest,
+                y = value + 0.01,
+                color = name_periods,
+                label = round(value, 2)),
+            position = position_dodge2(width = 0.9),
+            hjust = 0.00,
+            vjust = 0.50) +
+  scale_y_continuous(expand = c(0, 0),
+                     breaks = c(0.00, 0.25, 0.50),
+                     limits = c(0.00, 0.65)) +
+  coord_flip() +
+  guides(color = "none",
+         fill = guide_legend(reverse = TRUE)) +
+  labs(x = NULL, 
+       y = "Mean Annual Burn Probabilities (%)",
+       fill = NULL) +
+  theme_pubr() +
+  theme(legend.position = "bottom")
 
+# Export (3).
+
+ggsave("out/vis_bars_20250406.png",
+       vis_bars_3,
+       dpi = 300,
+       width = 6.5,
+       height = 4)
