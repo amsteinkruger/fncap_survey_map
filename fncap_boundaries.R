@@ -90,6 +90,7 @@ ggsave("out/vis_boundaries.png",
        vis,
        dpi = 300,
        width = 3.25,
-       height = )
+       height = 4.5,
+       bg = NULL)
 
 
