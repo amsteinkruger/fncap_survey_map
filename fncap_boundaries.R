@@ -1,14 +1,19 @@
 # Get a map of Oregon's state forests.
 
-# Include state borders, a handful of cities, and state forests with reasonably clear unit definitions. Worry about details later.
+# Include state borders, a handful of cities, and state forests with reasonably clear unit definitions. 
 
 # Packages
 
 library(tidyverse)
 library(terra)
 library(tidyterra)
+library(showtext)
 
 # Data
+
+# Check whether ODF boundaries work. (Nope.)
+
+# dat_odf = "data/ODF_Boundaries.lyrx" %>% vect
 
 #  Get cities, then subset to Astoria, Portland, Salem, Eugene, Bend, and Medford.
 
@@ -18,22 +23,29 @@ dat_cities =
   filter(CITY %in% c("ASTORIA", "PORTLAND", "SALEM", "EUGENE", "BEND", "MEDFORD")) %>% 
   mutate(City = CITY %>% str_to_title)
 
-#  Get state boundaries, then subset to 121W.
+#  Get state boundaries, then subset to 121W, then subset to 121W and (?)N.
 
 dat_or = 
   "data/cb_2023_us_state_500k" %>% 
   vect %>% 
+  filter(STUSPS == "OR") # %>% 
+  # project("epsg:2992")
+
+dat_or_west = 
+  "data/cb_2023_us_state_500k" %>% 
+  vect %>% 
   filter(STUSPS == "OR") %>% 
-  crop(ext(-125, -121, 40, 48)) %>% 
-  project("epsg:2992")
+  crop(ext(-125, -121, 40, 48))
 
-#  State Forests
-
-dat_odf = "data/ODF.gdb" %>% vect %>% aggregate
+dat_or_northwest = 
+  "data/cb_2023_us_state_500k" %>% 
+  vect %>% 
+  filter(STUSPS == "OR") %>% 
+  crop(ext(-125.0, -120.5, 43.5, 48.0))
 
 #  State Forests, but pulling from more detailed code for earlier bar visualization
 
-dat_odf_disagg =
+dat_odf =
   "data/ODF.gdb" %>%
   vect %>%
   select(DISTRICT) %>%
@@ -44,25 +56,33 @@ dat_odf_disagg =
                             DISTRICT == "Klamath-Lake" ~ "Gilchrist State Forest",
                             TRUE ~ NA)) %>%
   filter(!is.na(FOREST)) %>% 
+  filter(FOREST %in% c("Clatsop State Forest", "Tillamook State Forest", "Santiam State Forest")) %>% # 2025/05/20
   group_by(FOREST) %>%
   summarize() %>%
   ungroup
 
-# visualize names of districts to map state forest names onto districts or parts of districts
+# Check state forest names.
 
-# dat_odf_disagg %>% 
-#   ggplot() +
-#   geom_spatvector(aes(fill = DISTRICT), color = NA)
-
-
-dat_odf_disagg %>% 
+dat_odf %>% 
   ggplot() +
   geom_spatvector(aes(fill = FOREST), color = NA)
 
-# Wrangle
-
 # Visualize
-#  use colorbrewer greens for multiple state forests w/ outside borders in black and labels to left?
+
+#  Use Oregon State's "Pine Stand" color.
+
+pine = "#4A773C"
+
+#  Use Calibri. 
+
+font_add(family = "Calibri", regular = "C:/Windows/Fonts/calibri.ttf")
+
+#  Plot:
+#   All OR
+#   W OR
+#   NW OR
+
+# All OR
 
 vis = 
   ggplot() +
@@ -73,13 +93,63 @@ vis =
                   color = "grey50") +
   geom_spatvector_text(data = dat_cities,
                        aes(label = City),
-                       color = "grey50") +
-  geom_spatvector(data = dat_odf_disagg,
-                  aes(fill = FOREST),
-                  color = NA) +
-  geom_spatvector_text(data = dat_odf_disagg, 
+                       color = "grey50",
+                       family = "Calibri") +
+  geom_spatvector(data = dat_odf,
+                  color = NA,
+                  fill = pine) +
+  geom_spatvector_text(data = dat_odf, 
                        aes(label = FOREST),
-                       color = "black") +
+                       color = "black",
+                       family = "Calibri") +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(colour = "black", fill = NA))
+
+# W OR
+
+vis = 
+  ggplot() +
+  geom_spatvector(data = dat_or_west,
+                  fill = "white",
+                  color = "black") +
+  geom_spatvector(data = dat_cities,
+                  color = "grey50") +
+  geom_spatvector_text(data = dat_cities,
+                       aes(label = City),
+                       color = "grey50",
+                       family = "Calibri") +
+  geom_spatvector(data = dat_odf,
+                  color = NA,
+                  fill = pine) +
+  geom_spatvector_text(data = dat_odf, 
+                       aes(label = FOREST),
+                       color = "black",
+                       family = "Calibri") +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(colour = "black", fill = NA))
+
+# NW OR
+
+vis = 
+  ggplot() +
+  geom_spatvector(data = dat_or_northwest,
+                  fill = "white",
+                  color = "black") +
+  geom_spatvector(data = dat_cities %>% filter(City != "Medford"),
+                  color = "grey50") +
+  geom_spatvector_text(data = dat_cities %>% filter(City != "Medford"),
+                       aes(label = City),
+                       color = "grey50",
+                       family = "Calibri") +
+  geom_spatvector(data = dat_odf,
+                  color = NA,
+                  fill = pine) +
+  geom_spatvector_text(data = dat_odf, 
+                       aes(label = FOREST),
+                       color = "black",
+                       family = "Calibri") +
   theme_void() +
   theme(legend.position = "none",
         plot.background = element_rect(colour = "black", fill = NA))
@@ -89,8 +159,6 @@ vis =
 ggsave("out/vis_boundaries.png",
        vis,
        dpi = 300,
-       width = 3.25,
-       height = 4.5,
+       width = 3.75,
+       height = 3.75,
        bg = NULL)
-
-
