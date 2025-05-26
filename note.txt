@@ -1,0 +1,5 @@
+- 3x4 for scales for each set of boundaries
+- 1x1 at northwester scale for HCP extent and HCAs
+- "" for state forests, monochrome with legend
+- "" for state forests, three colors with legend
+- remember inset, legend, attribution
