@@ -1,21 +1,19 @@
-# Get a map of Oregon's state forests.
-
-# Include state borders, a handful of cities, and state forests with reasonably clear unit definitions. 
+# Get maps of Oregon's state forests and habitat conservation areas.
 
 # Packages
 
 library(tidyverse)
 library(ggpubr)
+library(patchwork)
 library(terra)
 library(tidyterra)
 library(showtext)
-library(ggpubr)
 
 showtext_auto(enable = TRUE)
 
 # Data
 
-#  Get state boundaries, then subset to 121W, then subset to 121W and (?)N.
+#  Get state boundaries, then subset.
 
 dat_or = 
   "data/cb_2023_us_state_500k" %>% 
@@ -34,6 +32,31 @@ dat_or_northwest =
 dat_or_northwester = 
   dat_or %>% 
   crop(ext(-125.0, -121.5, 44.5, 48.0))
+
+# Set up a specific inset for later.
+
+dat_inset_background = dat_or
+dat_inset_ext = vect(ext(dat_or_northwester), crs = crs(dat_or_northwester))
+
+vis_inset = 
+  ggplot() + 
+  geom_spatvector(data = dat_or,
+                  fill = "white",
+                  color = "grey50") +
+  geom_spatvector(data = dat_or %>% crop(dat_or_northwester),
+                  fill = "grey75",
+                  color = "grey50") +
+  geom_spatvector(data = dat_inset_ext,
+                  fill = NA,
+                  color = "black") +
+  geom_spatvector_text(data = dat_or,
+                       aes(label = NAME),
+                       color = "black",
+                       size = 10,
+                       family = "Calibri",
+                       nudge_y = -0.25) +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "white", color = "black"))
 
 #  Get cities, then subset to Astoria, Portland, Salem, Eugene, Bend, and Medford.
 
@@ -88,6 +111,7 @@ dat_odf_boundaries_conservation =
 
 pine = "#4A773C"
 moss = "#C4D6A4"
+bine = "#AA9D2E"
 tide = "#00859B"
 luminance = "#FFB500"
 stratosphere = "#006A8E"
@@ -249,9 +273,9 @@ vis_conservation_northwest =
 
 vis_patch = 
   ((vis_management_all / vis_management_west / vis_management_northwest) + plot_layout(heights = c(1, 1, 1)) |
-  (vis_forests_all / vis_forests_west / vis_forests_northwest) + plot_layout(heights = c(1, 1, 1)) |
-  (vis_plan_all / vis_plan_west / vis_plan_northwest) + plot_layout(heights = c(1, 1, 1)) |
-  (vis_conservation_all / vis_conservation_west / vis_conservation_northwest) + plot_layout(heights = c(1, 1, 1))) /
+     (vis_forests_all / vis_forests_west / vis_forests_northwest) + plot_layout(heights = c(1, 1, 1)) |
+     (vis_plan_all / vis_plan_west / vis_plan_northwest) + plot_layout(heights = c(1, 1, 1)) |
+     (vis_conservation_all / vis_conservation_west / vis_conservation_northwest) + plot_layout(heights = c(1, 1, 1))) /
   guide_area() +
   plot_layout(guides = "collect",
               heights = c(12, 1)) &
@@ -271,7 +295,7 @@ ggsave("out/vis_patch.png",
 
 palette_more = c("Habitat Conservation Plan Extent" = moss, "Habitat Conservation Areas" = pine)
 
-vis_more = 
+vis_more_base = 
   ggplot() +
   geom_spatvector(data = dat_or_northwester,
                   fill = "white") +
@@ -312,8 +336,159 @@ vis_more =
         legend.position = "bottom",
         legend.direction = "vertical")
 
+vis_more_inset = 
+  vis_more_base + inset_element(vis_inset, left = 0.63, bottom = 0.63, right = 0.955, top = 1)
+
 ggsave("out/vis_more.png",
-       vis_more,
+       vis_more_inset,
+       dpi = 300,
+       width = 3.25,
+       height = 4.00,
+       bg = NULL)
+
+# State Forests, Monochrome
+
+vis_forests_monochrome_base = 
+  ggplot() +
+  geom_spatvector(data = dat_or_northwester,
+                  fill = "white") +
+  geom_spatvector(data = dat_cities %>% filter(City %in% c("Portland", "Salem")),
+                  size = 1) +
+  geom_spatvector(data = 
+                    dat_odf_boundaries_forests %>% 
+                    crop(dat_or_northwester) %>% 
+                    mutate(legend_more = "State Forests"),
+                  aes(fill = legend_more),
+                  color = NA) +
+  # Text | Cities
+  geom_spatvector_text(data = dat_cities %>% filter(City %in% c("Portland", "Salem")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 1,
+                       vjust = 1,
+                       nudge_x = -0.024,
+                       nudge_y = -0.024,
+                       size = 12) +
+  # Text | Forests, Clatsop
+  geom_spatvector_label(data = dat_odf_boundaries_forests %>% 
+                          crop(dat_or_northwester) %>% 
+                          mutate(name = 
+                                   case_when(forestname == 1 ~ "Clatsop State Forest",
+                                             forestname == 3 ~ "Tillamook State Forest",
+                                             forestname == 2 ~ "Santiam State Forest") %>% 
+                                   factor) %>% 
+                          filter(forestname == 1),
+                        aes(label = name),
+                        size = 13,
+                        family = "Calibri",
+                        hjust = 0.5,
+                        vjust = 0,
+                        nudge_y = -0.05,
+                        label.size = NA,
+                        label.padding = unit(0.10, "lines"),
+                        alpha = 0.33) + # 0.22
+  # Text | Forests, Tillamook
+  geom_spatvector_label(data = dat_odf_boundaries_forests %>% 
+                          crop(dat_or_northwester) %>% 
+                          mutate(name = 
+                                   case_when(forestname == 1 ~ "Clatsop State Forest",
+                                             forestname == 3 ~ "Tillamook State Forest",
+                                             forestname == 2 ~ "Santiam State Forest") %>% 
+                                   factor) %>% 
+                          filter(forestname == 3),
+                        aes(label = name),
+                        size = 13,
+                        family = "Calibri",
+                        hjust = 0.5,
+                        vjust = 0,
+                        nudge_x = 0.25,
+                        nudge_y = -0.05,
+                        label.size = NA,
+                        label.padding = unit(0.10, "lines"),
+                        alpha = 0.33) + # -0.45
+  # Text | Forests, Santiam
+  geom_spatvector_label(data = dat_odf_boundaries_forests %>% 
+                          crop(dat_or_northwester) %>% 
+                          mutate(name = 
+                                   case_when(forestname == 1 ~ "Clatsop State Forest",
+                                             forestname == 3 ~ "Tillamook State Forest",
+                                             forestname == 2 ~ "Santiam State Forest") %>% 
+                                   factor) %>% 
+                          filter(forestname == 2),
+                        aes(label = name),
+                        size = 13,
+                        family = "Calibri",
+                        hjust = 0.5,
+                        vjust = 0,
+                        nudge_x = 0,
+                        nudge_y = -0.05,
+                        label.size = NA,
+                        label.padding = unit(0.10, "lines"),
+                        alpha = 0.33) + # -0.10
+  scale_fill_manual(values = pine) +
+  guides(fill = guide_legend(override.aes = list(linetype = 0)),
+         color = guide_legend(override.aes = list(linetype = 0))) +
+  theme_void() +
+  theme(legend.title = element_blank(),
+        legend.text = element_text(size = 30, family = "Calibri"),
+        legend.position = "bottom",
+        legend.direction = "vertical")
+
+vis_forests_monochrome_inset = 
+  vis_forests_monochrome_base + inset_element(vis_inset, left = 0.63, bottom = 0.63, right = 0.955, top = 1)
+
+ggsave("out/vis_forests_monochrome.png",
+       vis_forests_monochrome_inset,
+       dpi = 300,
+       width = 3.25,
+       height = 4.00,
+       bg = NULL)
+
+# State Forests, Trichrome
+
+palette_trichrome = c(moss, pine, bine)
+
+vis_forests_trichrome_base = 
+  ggplot() +
+  geom_spatvector(data = dat_or_northwester,
+                  fill = "white") +
+  geom_spatvector(data = dat_cities %>% filter(City %in% c("Portland", "Salem")),
+                  size = 1) +
+  geom_spatvector(data = 
+                    dat_odf_boundaries_forests %>% 
+                    crop(dat_or_northwester) %>% 
+                    mutate(legend_more = 
+                             case_when(forestname == 1 ~ "Clatsop State Forest",
+                                       forestname == 2 ~ "Santiam State Forest",
+                                       forestname == 3 ~ "Tillamook State Forest")),
+                  aes(fill = legend_more),
+                  color = NA) +
+  # Text | Cities
+  geom_spatvector_text(data = dat_cities %>% filter(City %in% c("Portland", "Salem")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 1,
+                       vjust = 1,
+                       nudge_x = -0.024,
+                       nudge_y = -0.024,
+                       size = 12) +
+  # scale_fill_manual(values = palette_trichrome) +
+  scale_fill_brewer(palette = "Greens",
+                    limits = c("1", "2", "3", "Clatsop State Forest", "Santiam State Forest", "Tillamook State Forest"),
+                    breaks = c("Clatsop State Forest", "Santiam State Forest", "Tillamook State Forest")) +
+  guides(fill = guide_legend(override.aes = list(linetype = 0)),
+         color = guide_legend(override.aes = list(linetype = 0))) +
+  theme_void() +
+  theme(legend.title = element_blank(),
+        legend.text = element_text(size = 30, family = "Calibri"),
+        legend.position = "bottom",
+        legend.direction = "vertical")
+
+vis_forests_trichrome_inset = 
+  vis_forests_trichrome_base + inset_element(vis_inset, left = 0.63, bottom = 0.63, right = 0.955, top = 1)
+
+ggsave("out/vis_forests_trichrome.png",
+       vis_forests_trichrome_inset,
        dpi = 300,
        width = 3.25,
        height = 4.00,
