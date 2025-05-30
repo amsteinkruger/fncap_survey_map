@@ -357,7 +357,7 @@ vis_forests_monochrome_base =
   geom_spatvector(data = 
                     dat_odf_boundaries_plan %>% 
                     crop(dat_or_northwester) %>% 
-                    mutate(legend_more = "HCP plan area land"),
+                    mutate(legend_more = "HCP State Forest Land"),
                   aes(fill = legend_more),
                   color = NA) +
   # Segments?
@@ -419,8 +419,8 @@ vis_forests_monochrome_base =
                        hjust = 0,
                        vjust = 0,
                        lineheight = 0.25,
-                       nudge_x = 0.10,
-                       nudge_y = 0.10) + 
+                       nudge_x = 0.15,
+                       nudge_y = 0.15) + 
   scale_fill_manual(values = pine) +
   guides(fill = guide_legend(override.aes = list(linetype = 0)),
          color = guide_legend(override.aes = list(linetype = 0))) +
@@ -498,6 +498,20 @@ ggsave("out/vis_forests_trichrome.png",
        bg = NULL)
 
 # Bonus Area Calculations:
+
+area_management = 
+  dat_odf_boundaries_management %>% 
+  mutate(Area_ha = expanse(., unit = "ha"),
+         Area_ac = Area_ha * 2.47105) %>% 
+  pull(Area_ac) %>% 
+  sum
+
+area_forests = 
+  dat_odf_boundaries_forests %>% 
+  mutate(Area_ha = expanse(., unit = "ha"),
+         Area_ac = Area_ha * 2.47105) %>% 
+  pull(Area_ac) %>% 
+  sum
 
 area_plan = 
   dat_odf_boundaries_plan %>% 
