@@ -546,7 +546,7 @@ vis_update_base =
   geom_spatvector(data = dat_or_northwest,
                   fill = "white") +
   geom_spatvector(data = dat_cascades %>% crop(dat_or_northwest),
-                  fill = "gray50",
+                  fill = "gray85",
                   color = NA) +
   geom_spatvector(data = dat_cities %>% filter(City %in% c("Portland", "Salem", "Eugene", "Bend")),
                   size = 1) +
@@ -556,7 +556,6 @@ vis_update_base =
                     mutate(legend_more = "HCP State Forest Land"),
                   aes(fill = legend_more),
                   color = NA) +
-  # Segments?
   # Text | Cities
   geom_spatvector_text(data = dat_cities %>% filter(City %in% c("Portland", "Salem", "Eugene", "Bend")),
                        aes(label = City),
@@ -616,7 +615,9 @@ vis_update_base =
                        vjust = 0,
                        lineheight = 0.25,
                        nudge_x = 0.15,
-                       nudge_y = 0.15) + 
+                       nudge_y = 0.15) +
+  xlim(-124.2566, -120.5) +
+  ylim(43.5, 46.75) +
   scale_fill_manual(values = pine) +
   guides(fill = guide_legend(override.aes = list(linetype = 0)),
          color = guide_legend(override.aes = list(linetype = 0))) +
