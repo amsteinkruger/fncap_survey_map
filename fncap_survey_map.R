@@ -1072,7 +1072,6 @@ ggsave("out/vis_update_bad.jpeg",
 
 # Northward from Coos Bay (8/9)
 
-
 #  Arbitrary bounds for forest layer
 
 dat_or_coos = 
@@ -1129,78 +1128,84 @@ vis_coos =
                     mutate(legend_more = "HCP State Forest Land"),
                   aes(fill = legend_more),
                   color = NA) +
-  # Text | Cascades
-  # geom_spatvector_text()
   # Text | Cities
-  # geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Portland", "Salem")),
-  #                      aes(label = City),
-  #                      family = "Calibri",
-  #                      hjust = 0.50,
-  #                      vjust = 1.00,
-  #                      nudge_x = -0.05,
-  #                      nudge_y = -0.05,
-  #                      size = 12) +
-  # geom_spatvector_text(data = dat_cities %>% filter(City %in% c("Eugene", "Bend")),
-  #                      aes(label = City),
-  #                      family = "Calibri",
-  #                      hjust = 0.50,
-  #                      vjust = 1.00,
-  #                      nudge_x = 0,
-  #                      nudge_y = -0.05,
-  #                      size = 12) +
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Portland", "Salem")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = -0.10,
+                       nudge_y = -0.05,
+                       size = 12) +
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Eugene", "Bend")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = 0,
+                       nudge_y = -0.05,
+                       size = 12) +
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Coos Bay")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = 0.50,
+                       nudge_y = -0.05,
+                       size = 12) +
   # Text | Forests, Clatsop
-  # geom_spatvector_text(data = dat_odf_boundaries_forests %>%
-  #                        crop(dat_or_west) %>%
-  #                        mutate(name =
-  #                                 case_when(forestname == 1 ~ "Clatsop\nState\nForest",
-  #                                           forestname == 3 ~ "Tillamook\nState\nForest",
-  #                                           forestname == 2 ~ "Santiam\nState\nForest") %>%
-  #                                 factor) %>%
-  #                        filter(forestname == 1),
-  #                      aes(label = name),
-  #                      size = 13,
-  #                      family = "Calibri",
-  #                      hjust = 0,
-  #                      vjust = 0,
-  #                      lineheight = 0.25,
-  #                      nudge_x = 0.15,
-  #                      nudge_y = 0.25) +
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 1),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 0,
+                       vjust = 0,
+                       lineheight = 0.25,
+                       nudge_x = 0.125,
+                       nudge_y = 0.250) +
   # Text | Forests, Tillamook
-  # geom_spatvector_text(data = dat_odf_boundaries_forests %>%
-  #                        crop(dat_or_west) %>%
-  #                        mutate(name =
-  #                                 case_when(forestname == 1 ~ "Clatsop\nState\nForest",
-  #                                           forestname == 3 ~ "Tillamook\nState\nForest",
-  #                                           forestname == 2 ~ "Santiam\nState\nForest") %>%
-  #                                 factor) %>%
-  #                        filter(forestname == 3),
-  #                      aes(label = name),
-  #                      size = 13,
-  #                      family = "Calibri",
-  #                      hjust = 1.00,
-  #                      vjust = 0.50,
-  #                      lineheight = 0.25,
-  #                      nudge_x = -0.50,
-  #                      nudge_y = 0.00) +
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 3),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 1.00,
+                       vjust = 0.50,
+                       lineheight = 0.25,
+                       nudge_x = -0.50,
+                       nudge_y = 0.00) +
   # Text | Forests, Santiam
-  # geom_spatvector_text(data = dat_odf_boundaries_forests %>%
-  #                        crop(dat_or_west) %>%
-  #                        mutate(name =
-  #                                 case_when(forestname == 1 ~ "Clatsop\nState\nForest",
-  #                                           forestname == 3 ~ "Tillamook\nState\nForest",
-  #                                           forestname == 2 ~ "Santiam\nState\nForest") %>%
-  #                                 factor) %>%
-  #                        filter(forestname == 2),
-  #                      aes(label = name),
-  #                      size = 13,
-  #                      family = "Calibri",
-  #                      hjust = 0.00,
-  #                      vjust = 0.50,
-  #                      lineheight = 0.25,
-  #                      nudge_x = 0.30,
-  #                      nudge_y = 0.05) +
-  # xlim(-125, -120.5) +
-  # ylim(42.00, 47.00) +
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 2),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 0.00,
+                       vjust = 0.50,
+                       lineheight = 0.25,
+                       nudge_x = 0.30,
+                       nudge_y = 0.05) +
+  xlim(-125.1, -121) +
+  ylim(43.00, 46.75) + 
   scale_fill_manual(values = c("grey85", pine)) +
   guides(fill = guide_legend(override.aes = list(linetype = 0), reverse = TRUE),
          color = guide_legend(override.aes = list(linetype = 0), reverse = TRUE)) +
@@ -1211,10 +1216,128 @@ vis_coos =
         legend.direction = "vertical")
 
 vis_coos_inset = 
-  vis_coos + inset_element(vis_inset, left = 0.55, right = 0.9575, bottom = 0.65, top = 1)
+  vis_coos + inset_element(vis_inset, left = 0.675, right = 0.955, bottom = 0.75, top = 1)
 
 ggsave("out/vis_coos.png",
        vis_coos_inset,
+       dpi = 300,
+       width = 3.25,
+       height = 4.00,
+       bg = NULL)
+
+#  Plot with center-aligned forest labels
+
+vis_coos_center = 
+  ggplot() +
+  geom_spatvector(data = 
+                    dat_cascades %>% 
+                    crop(dat_or_coos) %>% 
+                    mutate(legend_more = "Cascade Mountain Range"),
+                  aes(fill = legend_more),
+                  color = NA) +
+  geom_spatvector(data = dat_or_coos,
+                  fill = NA, # "white"
+                  color = "black") +
+  geom_spatvector(data = dat_cities_long,
+                  size = 1) +
+  geom_spatvector(data = 
+                    dat_odf_boundaries_management %>% 
+                    crop(dat_or_coosless) %>% 
+                    mutate(legend_more = "HCP State Forest Land"),
+                  aes(fill = legend_more),
+                  color = NA) +
+  # Text | Cities
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Portland", "Salem")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = -0.10,
+                       nudge_y = -0.05,
+                       size = 12) +
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Eugene", "Bend")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = 0,
+                       nudge_y = -0.05,
+                       size = 12) +
+  geom_spatvector_text(data = dat_cities_long %>% filter(City %in% c("Coos Bay")),
+                       aes(label = City),
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 1.00,
+                       nudge_x = 0.50,
+                       nudge_y = -0.05,
+                       size = 12) +
+  # Text | Forests, Clatsop
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 1),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 0,
+                       lineheight = 0.25,
+                       nudge_x = 0.50,
+                       nudge_y = 0.25) +
+  # Text | Forests, Tillamook
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 3),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 0.50,
+                       lineheight = 0.25,
+                       nudge_x = -1.00,
+                       nudge_y = 0.00) +
+  # Text | Forests, Santiam
+  geom_spatvector_text(data = dat_odf_boundaries_forests %>%
+                         crop(dat_or_west) %>%
+                         mutate(name =
+                                  case_when(forestname == 1 ~ "Clatsop\nState\nForest",
+                                            forestname == 3 ~ "Tillamook\nState\nForest",
+                                            forestname == 2 ~ "Santiam\nState\nForest") %>%
+                                  factor) %>%
+                         filter(forestname == 2),
+                       aes(label = name),
+                       size = 13,
+                       family = "Calibri",
+                       hjust = 0.50,
+                       vjust = 0.50,
+                       lineheight = 0.25,
+                       nudge_x = 0.75,
+                       nudge_y = 0.05) +
+  xlim(-125.1, -121) +
+  ylim(43.00, 46.75) + 
+  scale_fill_manual(values = c("grey85", pine)) +
+  guides(fill = guide_legend(override.aes = list(linetype = 0), reverse = TRUE),
+         color = guide_legend(override.aes = list(linetype = 0), reverse = TRUE)) +
+  theme_void() +
+  theme(legend.title = element_blank(),
+        legend.text = element_text(size = 30, family = "Calibri"),
+        legend.position = "bottom",
+        legend.direction = "vertical")
+
+vis_coos_inset_center = 
+  vis_coos_center + inset_element(vis_inset, left = 0.675, right = 0.955, bottom = 0.75, top = 1)
+
+ggsave("out/vis_coos_center.png",
+       vis_coos_inset_center,
        dpi = 300,
        width = 3.25,
        height = 4.00,
